@@ -1,5 +1,52 @@
 # CarND-Path-Planning-Project
 Self-Driving Car Engineer Nanodegree Program
+
+
+### Project Goal
+
+The goal of this project is to automatically drive a car on a simulated highway given the telemetry and the sensor fusion data received from the Simulator. The trajectory supplied by the program needs to assure that 
+
+	- the car stays in its highway lane (except when it must change lanes)
+	- avoids collisions by either slowing down or changing to another lane
+	- does not exceed maximum allowed speed limit
+	- does not jerk or exceed maximum allowed acceleration
+ 	- goes at maximum allowed speed whenever possible given the above constraints
+	
+
+
+### Implementation
+
+At each evaluation step the program is given the localization data identifying current location and speed of the car, the sensor fusion data identifying location and speed of other cars on the highway and the previous path data of our car from the previous evaluation steps. 
+
+The program performs three major steps to achieve the goals
+
+1. Given the localization and the sensor fusion data it evaluates 3 boolean flags
+
+	existsCarToLeft
+	existsCarToRight
+	existsCarTooCloseAhead
+
+2. Given the values of the 3 boolean flags calculated in step 1 and the current car location the program uses a simple finite state machine to decide on the next instruction to the car. The possible set of instructions includes
+
+	    do not change anything
+            switch to the left lane and maintain speed
+            switch to the left lane and speed up
+            switch to the right lane and maintain speed
+            switch to the right lane and speed up
+            slow down
+            speed up
+
+NOTE: the FSM is constructed in such a way that the car tends to switch to the middle lane whenever possible so that it has the freedom of going either left or right to avoid collisions
+
+3. Given the instruction calculated in step 2 and telemetry data that includes previous path and current car direction calculate the most appropriate trajectory and supply it in the form of X,Y points for the car to follow. Here the “spline” helper methods are used to calculate a smooth trajectory to make sure there is no jerk.
+
+	
+
+### Conclusion
+
+In all tests so far the car was  able to drive at least 4.32 miles without an incident
+
+
    
 ### Simulator.
 You can download the Term3 Simulator which contains the Path Planning Project from the [releases tab (https://github.com/udacity/self-driving-car-sim/releases/tag/T3_v1.2).  
