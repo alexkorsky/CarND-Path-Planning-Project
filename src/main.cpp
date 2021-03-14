@@ -25,7 +25,7 @@ int main() {
   vector<double> map_waypoints_dy;
 
   // Waypoint map to read from
-  string map_file_ = "./data/highway_map.csv";
+  string map_file_ = "../data/highway_map.csv";
   // The max s value before wrapping around the track back to 0
   double max_s = 6945.554;
 
@@ -291,17 +291,6 @@ int main() {
 
 		  for (int i = 1; i < 50 - prev_size; i++)
 		  {
-			  //                                  ref_vel += speed_diff;
-			  //                                  if (ref_vel > MAX_SPEED)
-			  //                                  {
-			  //                                	  // dont exceed the maximum speed
-			  //                                      ref_vel = MAX_SPEED;
-			  //                                  }
-			  //                                  else if (ref_vel < MAX_ACC)
-			  //                                  {
-			  //                                      ref_vel = MAX_ACC;
-			  //                                  }
-
 			  if (too_close)
 			  {
 				  ref_vel -= MAX_ACC;
