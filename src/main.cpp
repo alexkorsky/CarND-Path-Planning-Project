@@ -111,28 +111,82 @@ int main() {
           //   of the road. We will use this data to avoid collisions
           auto sensor_fusion = j[1]["sensor_fusion"];
 
+          bool existsCarToLeft = false;
+          bool existsCarToRight = false;
+          bool existsCarTooCloseAhead = false;
+
           for (int i = 0; i < sensor_fusion.size(); i++)
           {
-        	  // if car is in my lane
+        	  // evaluate next car's sensor measurements;
         	  float d = sensor_fusion[i][6];
 
-        	  if (d < (2 + 4 * lane + 2) && d > (2 + 4 * lane - 2))
-        	  {
-        		  double vx = sensor_fusion[i][3];
-        		  double vy = sensor_fusion[i][4];
-        		  double check_speed = sqrt(vx * vx + vy * vy);
-        		  double check_car_s = sensor_fusion[i][5];
+    		  double vx = sensor_fusion[i][3];
+    		  double vy = sensor_fusion[i][4];
+    		  double check_speed = sqrt(vx * vx + vy * vy);
+    		  double check_car_s = sensor_fusion[i][5];
 
-        		  check_car_s += ((double)prev_size * .02 * check_speed); // projected car's s location
+    		  check_car_s += ((double)prev_size * .02 * check_speed); // projected car's s location
 
-        		  // check s values greater than mine and s gap
-        		  if ((check_car_s > car_s) && ((check_car_s - car_s ) < 50))
-        		  {
-        			  std::cout << "Detected !!!: " << check_speed << "\n";
-        			  too_close = true;
-        		  }
-        	  }
+    		  // evaluate the  surroundings
+    		  if ((d < lane * 4)  && (d > lane * 4 - 4) && abs(car_s - check_car_s) < 30)
+    		  {
+    			  existsCarToLeft = true;
+    		  }
+    		  else if ((d > lane * 4 + 4)  && (d < lane * 4 + 8) && abs(car_s - check_car_s) < 30)
+    		  {
+    			  existsCarToRight = true;
+    		  }
+    		  else if ((d > lane * 4 )  && (d < lane * 4 + 4) && (check_car_s > car_s) && (check_car_s - car_s) < 30)
+    		  {
+    			  existsCarTooCloseAhead = true;
+    		  }
+    		  else
+    			  continue;
           }
+
+		  // now given the situation and our current lane decide what to do:
+		  if (lane == 0)
+		  {
+			  if (!existsCarToRight)
+			  {
+				  // always prefer to be in middle lane if possible
+				  lane++;
+			  }
+			  else if (existsCarTooCloseAhead)
+			  {
+				  // cannot go to middle lane and there is a car ahead
+				  // slow down
+				  too_close = true;
+			  }
+		  }
+		  else if (lane == 2)
+		  {
+			  if (!existsCarToLeft)
+			  {
+				  // always prefer to be in middle lane if possible
+				  lane--;
+			  }
+			  else if (existsCarTooCloseAhead)
+			  {
+				  // cannot go to middle lane and there is a car ahead
+				  // slow down
+				  too_close = true;
+			  }
+		  }
+		  else // middle lane
+		  {
+			  if (existsCarTooCloseAhead)
+			  {
+				  // try to switcg to left then to right and if neither are possible
+				  //slow down
+				  if (!existsCarToLeft)
+					  lane--;
+				  else if (!existsCarToRight)
+					  lane++;
+				  else
+					  too_close = true;
+			  }
+		  }
 
           if (too_close)
           {
